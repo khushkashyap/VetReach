@@ -5,10 +5,13 @@ const reportSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
     animalType: { type: String, required: true },
-    location: { type: String, required: true },
+    animalCount: { type: String, required: true },
+    severity: { type: String, required: true },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
     message: { type: String, required: true },
     imageUrl: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
-});
+    status: { type: String, default: "Pending" },
+}, { timestamps: true });
 
 module.exports = mongoose.model("Report", reportSchema);

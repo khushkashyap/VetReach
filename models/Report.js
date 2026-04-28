@@ -5,7 +5,10 @@ const ReportSchema = new mongoose.Schema({
   lastName: String,
   phoneNumber: String,
   animalType: String,
-  location: String,
+  animalCount: String,
+  severity: String,
+  latitude: Number,
+  longitude: Number,
   message: String,
   imageUrl: String,
   status: {

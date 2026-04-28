@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [selectedFeature, setSelectedFeature] = useState(null);
 
   return (
-    <main className="min-h-screen flex flex-col md:flex-row">
+    <main className="min-h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Sidebar */}
       <aside className="w-full md:w-fit">
         <Sidebar setSelectedFeature={setSelectedFeature} />
