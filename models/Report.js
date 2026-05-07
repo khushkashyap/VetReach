@@ -11,10 +11,8 @@ const ReportSchema = new mongoose.Schema({
   longitude: Number,
   message: String,
   imageUrl: String,
-  status: {
-    type: String,
-    default: "Pending",
-  },
+  assignedHospital: { type: mongoose.Schema.Types.ObjectId, ref: "Hospital" },
+  status: { type: String, default: "Pending" },
 }, { timestamps: true });
 
 export default mongoose.models.Report || mongoose.model("Report", ReportSchema);

@@ -109,7 +109,7 @@ export default function ReportForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50 flex items-center justify-center p-4">
+    <div className="w-full flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-2xl">
 
         {/* Header */}
@@ -307,7 +307,7 @@ export default function ReportForm() {
                   Submitting...
                 </span>
               ) : (
-                "🐾 Submit Rescue Report"
+                "Submit Rescue Report"
               )}
             </button>
             <p className="text-center text-xs text-slate-400 mt-3">

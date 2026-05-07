@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const reportSchema = new mongoose.Schema({
+const reportSchema = new mongoose.Schema(
+  {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
@@ -11,7 +12,10 @@ const reportSchema = new mongoose.Schema({
     longitude: { type: Number, required: true },
     message: { type: String, required: true },
     imageUrl: { type: String, required: true },
-    status: { type: String, default: "Pending" },
-}, { timestamps: true });
+    assignedHospital: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital' },
+    status: { type: String, default: 'Pending' },
+  },
+  { timestamps: true },
+);
 
-module.exports = mongoose.model("Report", reportSchema);
+module.exports = mongoose.model('Report', reportSchema);

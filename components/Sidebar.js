@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { LogoutLink, useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
@@ -15,18 +15,38 @@ export default function Sidebar({ setSelectedFeature }) {
     const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
     const [isOpen, setIsOpen] = useState(false);
 
+    // Prevent body scroll when sidebar is open on mobile
+    React.useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+        return () => {
+            document.body.style.overflow = "auto";
+        };
+    }, [isOpen]);
+
     return (
         <>
+            {/* Backdrop overlay for mobile */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-30"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
             {/* Hamburger Button for Mobile */}
             <button
-                className="md:hidden fixed top-4 left-4 z-50 p-2 bg-zinc-900 text-white rounded"
+                className="md:hidden fixed top-4 left-4 z-40 p-2 bg-zinc-900 text-white rounded"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
             {/* Sidebar Menu */}
-            <aside className={`fixed inset-y-0 left-0 bg-zinc-900 text-white w-64 p-4 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 md:relative md:flex md:w-64 lg:w-80 flex-col justify-between min-h-screen`}>
+            <aside className={`fixed inset-y-0 left-0 z-40 md:z-auto bg-zinc-900 text-white w-64 p-4 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 md:relative md:flex md:w-64 lg:w-80 flex-col justify-between min-h-screen`}>
                 <ul className="text-center flex flex-col gap-2 flex-grow">
                     {mainRoutes.map(({ path, name, requiresAuth }) => {
                         if (requiresAuth && !isAuthenticated) {

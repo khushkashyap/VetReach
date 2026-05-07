@@ -3,19 +3,23 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const reportRoutes = require("./routes/reportRoutes");
+const hospitalRoutes = require("./routes/hospitalRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 app.use(express.json());
 
-// 🌐 Allow only your frontend domain (Replace with actual frontend URL)
+// 🌐 CORS
 app.use(cors({
     origin: process.env.FRONTEND_URL || "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     credentials: true
 }));
 
+// 🛣️ Routes
 app.use("/api/reports", reportRoutes);
-
+app.use("/api/hospitals", hospitalRoutes);
+app.use("/api/users", userRoutes);
 
 // 🔗 MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -24,7 +28,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ✅ Basic Route
 app.get('/', (req, res) => {
-    res.send('✅ VetReach Server is Running 🚀');
+    res.send('✅ VetReach Server is Running');
 });
 
 // 🚀 Start Server
