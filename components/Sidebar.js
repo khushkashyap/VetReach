@@ -1,93 +1,109 @@
-"use client";
-import React, { useState } from "react";
-import { LogoutLink, useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import Image from "next/image";
-import { Menu, X } from "lucide-react";
+'use client';
+import React, { useState } from 'react';
+import {
+  LogoutLink,
+  useKindeBrowserClient,
+} from '@kinde-oss/kinde-auth-nextjs';
+import Image from 'next/image';
+import { Menu, X, PawPrint, History, Bell } from 'lucide-react';
 
 const mainRoutes = [
-    { path: "reportform", name: "Report Injured Animal" },
-    { path: "viewrescuerequest", name: "View Rescue Request", requiresAuth: true },
-    { path: "rescuehistory", name: "Rescue History", requiresAuth: true },
-    { path: "rescueupdates", name: "Rescue Updates", requiresAuth: true },
+  { path: 'reportform', name: 'Report Animal', icon: <PawPrint size={18} /> },
+  { path: 'rescuehistory', name: 'My Reports', icon: <History size={18} /> },
+  { path: 'rescueupdates', name: 'Live Updates', icon: <Bell size={18} /> },
 ];
 
-export default function Sidebar({ setSelectedFeature }) {
-    const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
-    const [isOpen, setIsOpen] = useState(false);
+export default function Sidebar({ setSelectedFeature, activeFeature }) {
+  const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
+  const [isOpen, setIsOpen] = useState(false);
 
-    // Prevent body scroll when sidebar is open on mobile
-    React.useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "auto";
-        }
-        return () => {
-            document.body.style.overflow = "auto";
-        };
-    }, [isOpen]);
+  React.useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'auto';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpen]);
 
-    return (
-        <>
-            {/* Backdrop overlay for mobile */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-30"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
+  return (
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-30"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-            {/* Hamburger Button for Mobile */}
-            <button
-                className="md:hidden fixed top-4 left-4 z-40 p-2 bg-zinc-900 text-white rounded"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+      {/* Hamburger */}
+      <button
+        className="md:hidden fixed top-4 left-4 z-40 p-2 bg-zinc-900 text-white rounded-lg"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
 
-            {/* Sidebar Menu */}
-            <aside className={`fixed inset-y-0 left-0 z-40 md:z-auto bg-zinc-900 text-white w-64 p-4 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 md:relative md:flex md:w-64 lg:w-80 flex-col justify-between min-h-screen`}>
-                <ul className="text-center flex flex-col gap-2 flex-grow">
-                    {mainRoutes.map(({ path, name, requiresAuth }) => {
-                        if (requiresAuth && !isAuthenticated) {
-                            return null; // Hide auth-required links if user is not logged in
-                        }
-                        return (
-                            <li key={path}>
-                                <button
-                                    className="py-3 px-5 block w-full text-left hover:bg-zinc-800 rounded-md transition"
-                                    onClick={() => setSelectedFeature(path)} // Ensure Dashboard uses same key
-                                >
-                                    {name}
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ul>
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 md:z-auto bg-zinc-900 text-white w-64 lg:w-72 p-4 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 md:relative md:flex flex-col min-h-screen`}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-2 px-2 py-4 mb-5 border-b border-zinc-700 shadow-lg">
+          <span className="text-2xl bg-teal-600 rounded-lg">🐾</span>
+          <span className="font-bold text-lg tracking-tight">VetReach</span>
+        </div>
 
-                {/* User Info & Logout */}
-                <div className="flex flex-col items-center mt-80">
-                    {isLoading && (
-                        <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-white/50"></div>
-                    )}
+        {/* Nav Links */}
+        <ul className="flex flex-col gap-1 flex-grow">
+          {mainRoutes.map(({ path, name, icon }) => {
+            if (!isAuthenticated) return null;
+            const isActive = activeFeature === path;
+            return (
+              <li key={path}>
+                <button
+                  className={`flex items-center gap-3 py-3 px-4 w-full text-left rounded-xl transition text-sm font-medium ${
+                    isActive
+                      ? 'bg-teal-600 text-white'
+                      : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                  }`}
+                  onClick={() => {
+                    setSelectedFeature(path);
+                    setIsOpen(false);
+                  }}
+                >
+                  {icon}
+                  {name}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
 
-                    {user?.picture && (
-                        <Image src={user?.picture} alt="Profile picture" width={50} height={50} className="rounded-full my-2" />
-                    )}
-
-                    {user?.email && (
-                        <p className="text-center text-xs mb-3">
-                            Logged in as {user?.email}
-                        </p>
-                    )}
-
-                    {isAuthenticated && (
-                        <LogoutLink className="py-3 px-5 text-center hover:bg-zinc-800 rounded-md w-full transition">
-                            Log out
-                        </LogoutLink>
-                    )}
-                </div>
-            </aside>
-        </>
-    );
+        {/* User Info & Logout */}
+        <div className="flex flex-col items-center border-t border-zinc-700 pt-4 mt-4">
+          {isLoading && (
+            <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-white/50 mb-2"></div>
+          )}
+          {user?.picture && (
+            <Image
+              src={user?.picture}
+              alt="Profile"
+              width={44}
+              height={44}
+              className="rounded-full mb-2"
+            />
+          )}
+          {user?.email && (
+            <p className="text-center text-xs text-zinc-400 mb-3 truncate w-full px-2">
+              {user?.email}
+            </p>
+          )}
+          {isAuthenticated && (
+            <LogoutLink className="py-2.5 px-5 text-center text-sm hover:bg-zinc-800 rounded-xl w-full transition text-zinc-300 hover:text-white">
+              Log out
+            </LogoutLink>
+          )}
+        </div>
+      </aside>
+    </>
+  );
 }

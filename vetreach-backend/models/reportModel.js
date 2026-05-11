@@ -14,6 +14,7 @@ const reportSchema = new mongoose.Schema(
     imageUrl: { type: String, required: true },
     assignedHospital: { type: mongoose.Schema.Types.ObjectId, ref: 'Hospital' },
     status: { type: String, default: 'Pending' },
+    reporterKindeId: { type: String },
   },
   { timestamps: true },
 );

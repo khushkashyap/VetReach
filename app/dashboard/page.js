@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import ReportForm from '@/components/ReportForm';
-import ViewRescueRequest from '@/components/ViewRescueRequest';
 import RescueHistory from '@/components/RescueHistory';
 import RescueUpdates from '@/components/RescueUpdates';
 
@@ -13,7 +12,7 @@ export default function Dashboard() {
     <main className="min-h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Sidebar */}
       <aside className="w-full md:w-fit">
-        <Sidebar setSelectedFeature={setSelectedFeature} />
+        <Sidebar setSelectedFeature={setSelectedFeature} activeFeature={selectedFeature} />
       </aside>
 
       {/* Right Panel */}
@@ -22,8 +21,6 @@ export default function Dashboard() {
         {/* Render selected feature */}
         {selectedFeature === 'reportform' ? (
           <ReportForm />
-        ) : selectedFeature === 'viewrescuerequest' ? (
-          <ViewRescueRequest />
         ) : selectedFeature === 'rescuehistory' ? (
           <RescueHistory />
         ) : selectedFeature === 'rescueupdates' ? (
