@@ -1,20 +1,37 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
+import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 
 const severityConfig = {
-  Minor: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-700", dot: "bg-emerald-500" },
-  Moderate: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", dot: "bg-amber-500" },
-  Critical: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", dot: "bg-red-500" },
+  Minor: {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-700',
+    dot: 'bg-emerald-500',
+  },
+  Moderate: {
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    text: 'text-amber-700',
+    dot: 'bg-amber-500',
+  },
+  Critical: {
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    text: 'text-red-700',
+    dot: 'bg-red-500',
+  },
 };
 
 const statusConfig = {
-  Pending: { bg: "bg-slate-100", text: "text-slate-600" },
-  Accepted: { bg: "bg-blue-100", text: "text-blue-700" },
-  "In Progress": { bg: "bg-amber-100", text: "text-amber-700" },
-  Completed: { bg: "bg-emerald-100", text: "text-emerald-700" },
+  Pending: { bg: 'bg-slate-100', text: 'text-slate-600' },
+  Accepted: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  'In Progress': { bg: 'bg-amber-100', text: 'text-amber-700' },
+  Completed: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
 };
 
 export default function ViewRescueRequest() {
+  const { user } = useKindeBrowserClient();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,24 +39,31 @@ export default function ViewRescueRequest() {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reports`
+      // Pehle hospital ka data fetch karo
+      const hospitalRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/hospitals/kinde/${user?.id}`,
       );
-      if (!response.ok) throw new Error("Failed to fetch");
+      const hospital = await hospitalRes.json();
+
+      // Phir assigned reports fetch karo
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/hospitals/${hospital._id}/reports`,
+      );
+      if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
-      if (!Array.isArray(data)) throw new Error("Invalid data format");
+      if (!Array.isArray(data)) throw new Error('Invalid data format');
       setRequests(data);
     } catch (err) {
-      console.error("Error fetching rescue requests:", err);
-      setError("Failed to fetch rescue requests. Please try again.");
+      console.error('Error fetching rescue requests:', err);
+      setError('Failed to fetch rescue requests. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    if (user?.id) fetchRequests();
+  }, [user]);
 
   const handleStatusUpdate = async (id, newStatus) => {
     setUpdatingId(id);
@@ -47,16 +71,16 @@ export default function ViewRescueRequest() {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reports/${id}`,
         {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: newStatus }),
-        }
+        },
       );
-      if (!response.ok) throw new Error("Failed to update");
+      if (!response.ok) throw new Error('Failed to update');
       await fetchRequests();
     } catch (err) {
-      console.error("Error updating status:", err);
-      alert("Failed to update status. Please try again.");
+      console.error('Error updating status:', err);
+      alert('Failed to update status. Please try again.');
     } finally {
       setUpdatingId(null);
     }
@@ -66,9 +90,24 @@ export default function ViewRescueRequest() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
-        <svg className="animate-spin w-8 h-8 text-teal-500" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        <svg
+          className="animate-spin w-8 h-8 text-teal-500"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"
+          />
         </svg>
         <p className="text-slate-500 text-sm">Loading rescue requests...</p>
       </div>
@@ -93,8 +132,12 @@ export default function ViewRescueRequest() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Rescue Requests</h2>
-          <p className="text-slate-500 text-sm mt-0.5">{requests.length} total reports</p>
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+            Rescue Requests
+          </h2>
+          <p className="text-slate-500 text-sm mt-0.5">
+            {requests.length} total reports
+          </p>
         </div>
         <button
           onClick={fetchRequests}
@@ -109,13 +152,17 @@ export default function ViewRescueRequest() {
         <div className="text-center py-24 bg-white rounded-2xl border border-slate-100">
           <p className="text-4xl mb-3">🐾</p>
           <p className="text-slate-600 font-medium">No rescue requests yet</p>
-          <p className="text-slate-400 text-sm mt-1">New reports will appear here</p>
+          <p className="text-slate-400 text-sm mt-1">
+            New reports will appear here
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           {requests.map((request) => {
-            const severity = severityConfig[request.severity] || severityConfig["Minor"];
-            const status = statusConfig[request.status] || statusConfig["Pending"];
+            const severity =
+              severityConfig[request.severity] || severityConfig['Minor'];
+            const status =
+              statusConfig[request.status] || statusConfig['Pending'];
             const isUpdating = updatingId === request._id;
 
             return (
@@ -150,21 +197,28 @@ export default function ViewRescueRequest() {
 
                           {/* Severity Badge */}
                           {request.severity && (
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${severity.bg} ${severity.border} ${severity.text}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${severity.dot}`}></span>
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${severity.bg} ${severity.border} ${severity.text}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${severity.dot}`}
+                              ></span>
                               {request.severity}
                             </span>
                           )}
 
                           {/* Status Badge */}
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}`}>
-                            {request.status || "Pending"}
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}`}
+                          >
+                            {request.status || 'Pending'}
                           </span>
                         </div>
 
                         {/* Reporter */}
                         <p className="text-slate-600 text-sm mb-1">
-                          👤 {request.firstName} {request.lastName} — 📞 {request.phoneNumber}
+                          👤 {request.firstName} {request.lastName} — 📞{' '}
+                          {request.phoneNumber}
                         </p>
 
                         {/* Message */}
@@ -194,40 +248,46 @@ export default function ViewRescueRequest() {
 
                       {/* Time */}
                       <p className="text-slate-400 text-xs">
-                        🕐 {new Date(request.createdAt).toLocaleString("en-IN")}
+                        🕐 {new Date(request.createdAt).toLocaleString('en-IN')}
                       </p>
                     </div>
 
                     {/* Status Actions */}
                     <div className="flex items-center gap-2">
-                      {request.status === "Pending" && (
+                      {request.status === 'Pending' && (
                         <button
-                          onClick={() => handleStatusUpdate(request._id, "Accepted")}
+                          onClick={() =>
+                            handleStatusUpdate(request._id, 'Accepted')
+                          }
                           disabled={isUpdating}
                           className="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg transition disabled:opacity-50"
                         >
-                          {isUpdating ? "Updating..." : "✅ Accept Rescue"}
+                          {isUpdating ? 'Updating...' : '✅ Accept Rescue'}
                         </button>
                       )}
-                      {request.status === "Accepted" && (
+                      {request.status === 'Accepted' && (
                         <button
-                          onClick={() => handleStatusUpdate(request._id, "In Progress")}
+                          onClick={() =>
+                            handleStatusUpdate(request._id, 'In Progress')
+                          }
                           disabled={isUpdating}
                           className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition disabled:opacity-50"
                         >
-                          {isUpdating ? "Updating..." : "🚗 Mark In Progress"}
+                          {isUpdating ? 'Updating...' : '🚗 Mark In Progress'}
                         </button>
                       )}
-                      {request.status === "In Progress" && (
+                      {request.status === 'In Progress' && (
                         <button
-                          onClick={() => handleStatusUpdate(request._id, "Completed")}
+                          onClick={() =>
+                            handleStatusUpdate(request._id, 'Completed')
+                          }
                           disabled={isUpdating}
                           className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition disabled:opacity-50"
                         >
-                          {isUpdating ? "Updating..." : "🎉 Mark Completed"}
+                          {isUpdating ? 'Updating...' : '🎉 Mark Completed'}
                         </button>
                       )}
-                      {request.status === "Completed" && (
+                      {request.status === 'Completed' && (
                         <span className="px-4 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-lg">
                           ✅ Rescue Completed
                         </span>
