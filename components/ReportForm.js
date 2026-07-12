@@ -2,10 +2,24 @@
 import React, { useState, useRef } from 'react';
 import FileUpload from './FileUpload';
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { CircleCheckBig, MapPin, XCircle, ChevronDown } from "lucide-react";
+import { GiCow } from "react-icons/gi";
+import { FaDog, FaCat, FaFeather } from "react-icons/fa";
+import { MdQuestionMark } from "react-icons/md";
+
+const animalOptions = [
+  { value: 'Cow', label: 'Cow', Icon: GiCow, color: 'text-amber-700' },
+  { value: 'Buffalo', label: 'Buffalo', Icon: GiCow, color: 'text-gray-700' },
+  { value: 'Dog', label: 'Dog', Icon: FaDog, color: 'text-orange-700' },
+  { value: 'Cat', label: 'Cat', Icon: FaCat, color: 'text-amber-600' },
+  { value: 'Bird', label: 'Bird', Icon: FaFeather, color: 'text-blue-600' },
+  { value: 'Other', label: 'Other', Icon: MdQuestionMark, color: 'text-slate-600' },
+];
 
 export default function ReportForm() {
   const { user } = useKindeBrowserClient();
   const fileUploadRef = useRef();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [locationStatus, setLocationStatus] = useState('idle'); // idle | loading | success | error
   const [formData, setFormData] = useState({
     firstName: '',
@@ -23,7 +37,21 @@ export default function ReportForm() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === 'phoneNumber') {
+      // Allow dashes and spaces for formatting, but limit numeric digits to 10
+      const numericOnly = value.replace(/[^0-9]/g, '');
+      if (numericOnly.length <= 10) {
+        setFormData({ ...formData, [name]: value });
+      }
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleAnimalSelect = (value) => {
+    setFormData({ ...formData, animalType: value });
+    setDropdownOpen(false);
   };
 
   const handleImageUpload = (url) => {
@@ -191,11 +219,13 @@ export default function ReportForm() {
                 Phone Number
               </label>
               <input
-                type="number"
+                type="tel"
+                inputMode="numeric"
                 name="phoneNumber"
                 placeholder="Enter your 10-digit number"
                 value={formData.phoneNumber}
                 onChange={handleChange}
+                maxLength="10"
                 required
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition"
               />
@@ -208,25 +238,66 @@ export default function ReportForm() {
               Animal Details
             </p>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
+            <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">
                   Animal Type
                 </label>
-                <select
-                  name="animalType"
-                  value={formData.animalType}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition appearance-none"
-                >
-                  <option value="">Select animal</option>
-                  <option>🐄 Cow</option>
-                  <option>🐃 Buffalo</option>
-                  <option>🐕 Dog</option>
-                  <option>🐈 Cat</option>
-                  <option>🐦 Bird</option>
-                  <option>Other</option>
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition flex items-center justify-between hover:bg-slate-100"
+                  >
+                    <span className="flex items-center gap-2">
+                      {formData.animalType ? (
+                        <>
+                          {(() => {
+                            const selected = animalOptions.find(opt => opt.value === formData.animalType);
+                            const { Icon, color } = selected || {};
+                            return (
+                              <>
+                                <Icon className={`text-lg ${color}`} />
+                                <span>{selected?.label}</span>
+                              </>
+                            );
+                          })()}
+                        </>
+                      ) : (
+                        <span className="text-slate-400">Select animal</span>
+                      )}
+                    </span>
+                    <ChevronDown size={18} className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50">
+                      {animalOptions.map((option) => {
+                        const { Icon, color, value, label } = option;
+                        const isSelected = formData.animalType === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => handleAnimalSelect(value)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition ${
+                              isSelected
+                                ? 'bg-teal-50 border-l-4 border-teal-600'
+                                : 'hover:bg-slate-50'
+                            } ${value !== animalOptions[animalOptions.length - 1].value ? 'border-b border-slate-100' : ''}`}
+                          >
+                            <Icon className={`text-lg ${color}`} />
+                            <span className={`text-sm font-medium ${
+                              isSelected ? 'text-teal-700 font-semibold' : 'text-slate-700'
+                            }`}>
+                              {label}
+                            </span>
+                            {isSelected && <span className="ml-auto text-teal-600">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">
@@ -321,9 +392,9 @@ export default function ReportForm() {
                   />
                 </svg>
               )}
-              {locationStatus === 'success' && <span>✅</span>}
-              {locationStatus === 'error' && <span>❌</span>}
-              {locationStatus === 'idle' && <span>📍</span>}
+              {locationStatus === 'success' && <CircleCheckBig size={16} />}
+              {locationStatus === 'error' && <XCircle size={16} />}
+              {locationStatus === 'idle' && <MapPin size={16} />}
 
               {locationStatus === 'idle' && 'Use My Current Location'}
               {locationStatus === 'loading' && 'Fetching location...'}

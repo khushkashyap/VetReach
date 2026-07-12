@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
+import { Building2, Heart, Clock } from 'lucide-react';
 import HospitalSidebar from '@/components/HospitalSidebar';
 import HospitalRegistration from '@/components/HospitalRegistration';
 import ViewRescueRequest from '@/components/ViewRescueRequest';
@@ -95,12 +96,20 @@ export default function HospitalDashboard() {
               </div>
               <div className="w-px h-8 bg-slate-100"></div>
               <div className="text-center">
-                <p className="font-bold text-slate-800 text-lg">🏥</p>
+                <div className="flex justify-center mb-1">
+                  <div className="bg-blue-100 p-2 rounded-lg">
+                    <Building2 size={20} className="text-blue-600" />
+                  </div>
+                </div>
                 <p className="text-slate-400 text-xs">Hospital</p>
               </div>
               <div className="w-px h-8 bg-slate-100"></div>
               <div className="text-center">
-                <p className="font-bold text-slate-800 text-lg">🐾</p>
+                <div className="flex justify-center mb-1">
+                  <div className="bg-red-100 p-2 rounded-lg">
+                    <Heart size={20} className="text-red-600" />
+                  </div>
+                </div>
                 <p className="text-slate-400 text-xs">Rescue</p>
               </div>
             </div>
